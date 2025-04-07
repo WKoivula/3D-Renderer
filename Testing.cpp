@@ -22,7 +22,6 @@ void processInput(GLFWwindow* window) {
     }
 }
 
-
 float vertices[] = {
     0.5f,  0.5f, 0.0f,
     0.5f, -0.5f, 0.0f,
@@ -46,27 +45,6 @@ string readShaderSource(const std::string& filepath) {
     buffer << file.rdbuf();
     return buffer.str();
 }
-
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
-
-const char* fragmentShaderSourceYellow = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
-"}\0";
 
 GLuint compileShader(GLenum shaderType, const string& path) {
     GLuint shader = glCreateShader(shaderType);
@@ -130,22 +108,16 @@ int main()
     // Compiling vertex shader
     GLuint vertexShader;
     string src = readShaderSource("C:/Users/willi/source/repos/FirstOpenGL/FirstOpenGL/3D-Renderer/vertex.vert");
-    cout << src << "\n";
     vertexShader = compileShader(GL_VERTEX_SHADER, src);
 
     // Compiling two fragment shaders with different colors
     GLuint fragmentShader;
-    fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-
-    GLuint fragmentShaderYellow;
-    fragmentShaderYellow = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSourceYellow);
+    string fragSrc = readShaderSource("C:/Users/willi/source/repos/FirstOpenGL/FirstOpenGL/3D-Renderer/fragment.frag");
+    fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragSrc);
 
     // Link fragment and vertex shader into shader program
     GLuint shaderProgram;
     shaderProgram = createShaderProgram(vertexShader, fragmentShader);
-
-    GLuint shaderProgramYellow;
-    shaderProgramYellow = createShaderProgram(vertexShader, fragmentShaderYellow);
 
     glUseProgram(shaderProgram);
 
