@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Stellar by HTML5 UP</title>
+		<title>SVO ray marcher devblog</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
@@ -19,10 +19,10 @@
 
 				<!-- Header -->
 					<header id="header" class="alt">
-						<span class="logo"><img src="images/logo.svg" alt="" /></span>
-						<h1>Stellar</h1>
-						<p>Just another free, fully responsive site template<br />
-						built by <a href="https://twitter.com/ajlkn">@ajlkn</a> for <a href="https://html5up.net">HTML5 UP</a>.</p>
+						<span class="logo"><img src="images/voxel.png" alt="" /></span>
+						<h1>Voxel engine devblog</h1>
+						<p>Developing a ray marcher in a Sparse Voxel Octree<br />
+						built by <a href="https://github.com/WKoivula">@WKoivula</a> for <a href="https://www.kth.se/student/kurser/kurs/DH2323?l=en">DH2323 Computer Graphics and Interaction</a>.</p>
 					</header>
 
 				<!-- Nav -->
@@ -43,16 +43,21 @@
 								<div class="spotlight">
 									<div class="content">
 										<header class="major">
-											<h2>Ipsum sed adipiscing</h2>
+											<h2>Project specification</h2>
 										</header>
-										<p>Sed lorem ipsum dolor sit amet nullam consequat feugiat consequat magna
-										adipiscing magna etiam amet veroeros. Lorem ipsum dolor tempus sit cursus.
-										Tempus nisl et nullam lorem ipsum dolor sit amet aliquam.</p>
+										<p>Voxel engines are used in 3D rendering and simulations for various different applications such as games or digital environments. These engines use volumetric data to represent a 3D space where each volumetric pixel (voxel) corresponds to a cubic chunk of space.<br /><br />
+
+											The challenge with traditional cartesian voxel grids is that they tend to use and access a lot of memory that it technically doesn’t need, making it inefficient. This issue is especially visible for environments that are sparse or where big areas are empty.<br /><br />
+											
+											One way to tackle this is to use a more efficient spatial data structure, called a Sparse Voxel Octree (SVO). A normal octree works by dividing space into 8 different child octants. These octants can then contain 8 new child octants themselves. This continues on until a certain level of detail. For SVOs, all octants don't have to contain 8 new child octants, so for more sparse environments there will be less voxels than if all octants would have to go to a certain depth. This enables very fast hierarchical travel through nodes and drastically reduces memory usage.<br /><br />
+											
+											My project aims to implement a basic ray-marcher that uses an SVO as its data structure for rendering voxel scenes. This implementation will then be evaluated on its performance and image quality. This will be done by running the implementation under varyingly complex environments and looking at things like frames per second, amount of voxels compared to a cartesian grid and memory usage. If there is time I could also compare this performance to a more naive cartesian grid-based approach which would give an insight into how much more effective it actually is.<br /><br />
+											</p>
 										<ul class="actions">
 											<li><a href="generic.html" class="button">Learn More</a></li>
 										</ul>
 									</div>
-									<span class="image"><img src="images/pic01.jpg" alt="" /></span>
+									<span class="image"><img src="images/svo.png" alt="" /></span>
 								</div>
 							</section>
 
@@ -149,14 +154,12 @@
 							</ul>
 						</section>
 						<section>
-							<h2>Etiam feugiat</h2>
+							<h2>William Koivula</h2>
 							<dl class="alt">
-								<dt>Address</dt>
-								<dd>1234 Somewhere Road &bull; Nashville, TN 00000 &bull; USA</dd>
 								<dt>Phone</dt>
-								<dd>(000) 000-0000 x 0000</dd>
+								<dd>(+46) 722 251 875</dd>
 								<dt>Email</dt>
-								<dd><a href="#">information@untitled.tld</a></dd>
+								<dd><a href="#">william@koivula.se</a></dd>
 							</dl>
 							<ul class="icons">
 								<li><a href="#" class="icon brands fa-twitter alt"><span class="label">Twitter</span></a></li>
