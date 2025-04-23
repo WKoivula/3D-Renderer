@@ -9,7 +9,51 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+using glm::vec3;
+using glm::ivec3;
 using namespace std;
+
+struct VoxelData {
+    vec3 color;
+};
+
+struct Node {
+    bool isLeaf;
+    Node *children[8];
+    VoxelData data;
+};
+
+class SparseVoxelOctree {
+    private:
+        int size;
+        int maxDepth;
+        Node* root;
+
+        void insertNode(Node*& node, vec3 point, ivec3 pos, int depth) {
+            if (!node) {
+                node = new Node;
+            }
+
+            if (depth == maxDepth) {
+                node->isLeaf = true;
+                return;
+            }
+
+            float size = size / exp2(depth);
+            ivec3 childPos;
+            childPos.x = point.x >= (pos.x * size) + (size / 2.f);
+            childPos.y = point.y >= (pos.y * size) + (size / 2.f);
+            childPos.z = point.z >= (pos.z * size) + (size / 2.f);
+
+            int childIndex = (childPos.x << 0) | (childPos.y << 0) | (childPos.z << 0);
+
+            pos.x = pos.x << 1 | childPos.x;
+            pos.y = pos.y << 1 | childPos.y;
+            pos.z = pos.z << 1 | childPos.z;
+
+            insertNode(node->children[childIndex], pos, pos, depth + 1);
+        }
+};
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
