@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <bitset>
 
 using glm::vec3;
 using glm::ivec3;
@@ -19,7 +20,7 @@ struct VoxelData {
 
 struct Node {
     bool isLeaf;
-    Node *children[8];
+    Node *children[8] = { nullptr };
     VoxelData data;
 };
 
@@ -47,25 +48,57 @@ class SparseVoxelOctree {
                 return;
             }
 
-            float size = svoSize / exp2(depth);
+            float size = svoSize / (float)exp2(depth);
             ivec3 childPos;
             childPos.x = point.x >= (pos.x * size) + (size / 2.f);
             childPos.y = point.y >= (pos.y * size) + (size / 2.f);
             childPos.z = point.z >= (pos.z * size) + (size / 2.f);
 
-            int childIndex = (childPos.x << 0) | (childPos.y << 0) | (childPos.z << 0);
+            int childIndex = (childPos.x << 0) | (childPos.y << 1) | (childPos.z << 2);
 
             pos.x = pos.x << 1 | childPos.x;
             pos.y = pos.y << 1 | childPos.y;
             pos.z = pos.z << 1 | childPos.z;
 
-            insertNode(node->children[childIndex], pos, pos, depth + 1);
+            insertNode(node->children[childIndex], point, pos, depth + 1);
+        }
+
+        void flattenSVO(Node* node, vector<FlatNode>& flatNodes) {
+            if (!node) return;
+
+            FlatNode flatNode;
+            flatNode.childMask = 0;
+            flatNode.firstChildIndex = UINT32_MAX;
+
+            size_t currentIndex = flatNodes.size();
+            flatNodes.push_back(flatNode);
+
+            // Create child mask and get all child nodes
+            vector<Node*> childList;
+            for (int i = 0; i < 8; i++) {
+                if (node->children[i]) {
+                    flatNode.childMask |= (1 << i);
+                    childList.push_back(node->children[i]);
+                }
+            }
+
+            if (!childList.empty()) {
+                flatNode.firstChildIndex = flatNodes.size();
+                for (int i = 0; i < 8; i++) {
+                    if (node->children[i]) {
+                        flattenSVO(node->children[i], flatNodes);
+                    }
+                }
+            }
+
+            flatNodes[currentIndex] = flatNode;
         }
     public:
         SparseVoxelOctree(int svoSize, int maxDepth)
             : svoSize(svoSize), maxDepth(maxDepth), root(nullptr) {}
 
         void insert(vec3 point) {
+            cout << root;
             insertNode(root, point, ivec3(0), 0);
         }
 
@@ -86,6 +119,34 @@ class SparseVoxelOctree {
         }
 };
 
+void printFlatSVO(const vector<FlatNode>& flatNodes, int index = 0, int depth = 0) {
+    if (index >= flatNodes.size()) return;
+
+    const FlatNode& node = flatNodes[index];
+
+    // Indentation
+    for (int i = 0; i < depth; ++i) cout << "  ";
+
+    // Print this node
+    cout << "Node " << index << " | Mask: " << std::bitset<8>(node.childMask)
+        << " | FirstChild: ";
+    if (node.firstChildIndex == 0xFFFFFF)
+        cout << "Leaf";
+    else
+        cout << node.firstChildIndex;
+    cout << "\n";
+
+    if (node.firstChildIndex == 0xFFFFFF) return; // Leaf node
+
+    int childCount = 0;
+    for (int i = 0; i < 8; ++i) {
+        if (node.childMask & (1 << i)) {
+            printFlatSVO(flatNodes, node.firstChildIndex + childCount, depth + 1);
+            childCount++;
+        }
+    }
+}
+
 SparseVoxelOctree createSVO() {
     SparseVoxelOctree svo(64, 4);
     vec3 point(10.5f, 20.0f, 5.0f);
@@ -95,37 +156,6 @@ SparseVoxelOctree createSVO() {
     svo.insert(point1);
 
     return svo;
-}
-
-void flattenSVO(Node* node, vector<FlatNode>& flatNodes) {
-    if (!node) return;
-
-    FlatNode flatNode;
-    flatNode.childMask = 0;
-    flatNode.firstChildIndex = UINT32_MAX;
-
-    size_t currentIndex = flatNodes.size();
-    flatNodes.push_back(flatNode);
-
-    // Create child mask and get all child nodes
-    vector<Node*> childList;
-    for (int i = 0; i < 8; i++) {
-        if (node->children[i]) {
-            flatNode.childMask |= (1 << i);
-            childList.push_back(node->children[i]);
-        }
-    }
-
-    if (!childList.empty()) {
-        flatNode.firstChildIndex = flatNodes.size();
-        for (int i = 0; i < 8; i++) {
-            if (node->children[i]) {
-                flattenSVO(node->children[i], flatNodes);
-            }
-        }
-    }
-
-    flatNodes[currentIndex] = flatNode;
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -201,6 +231,15 @@ GLuint createShaderProgram(GLuint vertexShader, GLuint fragmentShader) {
 int main()
 {
     SparseVoxelOctree svo = createSVO();
+    cout << "SVO created\n";
+    vector<FlatNode> svoArray = svo.toFlatArray();
+    printFlatSVO(svoArray);
+
+    vector<uint32_t> flatIntArray = svo.toFlatIntArray();
+
+    //for (int i = 0; i < svoArray.size(); i++) {
+    //    cout << svoArray[i] << ", ";
+    //}
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
